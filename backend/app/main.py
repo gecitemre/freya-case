@@ -4,6 +4,7 @@ import os
 import time
 import uuid
 from collections import defaultdict, deque
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,18 +12,29 @@ from .models import AgentConfig, CreateSessionResponse, BotState
 from .state import create_session, get_session
 from .daily import create_room_and_tokens
 from .bot import run_bot
+from .rag import init_collection
 
 logger = logging.getLogger("agent-console")
 logging.basicConfig(level=logging.INFO)
 
-app = FastAPI(title="Agent Console Backend")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        init_collection()
+    except Exception:
+        logger.exception("RAG init failed")
+    yield
+
+
+app = FastAPI(title="Agent Console Backend", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] ,
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"] ,
-    allow_headers=["*"] ,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -53,14 +65,17 @@ async def create_session_endpoint(config: AgentConfig, request: Request):
 
     def on_state_change(state: str):
         session.bot_state = state
+        if state != "error":
+            session.last_error = None
 
     def on_latency(latency_ms: int):
         session.round_trip_latency_ms = latency_ms
         session.last_error = None
 
-    def on_error(message: str):
-        session.last_error = message
-        session.bot_state = "error"
+    def on_error(message: str | None):
+        if message:
+            session.last_error = message
+            session.bot_state = "error"
 
     async def _run_wrapper():
         try:

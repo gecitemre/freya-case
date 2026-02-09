@@ -19,5 +19,12 @@ This is a minimal starting point that matches the take-home requirements:
 2. Backend creates a Daily room, starts the bot, and returns `room_url` + token.
 3. UI connects via Daily transport and streams audio.
 
-## Config notes
-- `tts.voice` expects a Cartesia `voice_id`.
+
+## Optional Addon: Help Center RAG (Qdrant)
+The backend seeds a Qdrant collection with a small help-center FAQ and injects relevant
+answers into the system context before LLM calls.
+
+Environment:
+- `QDRANT_URL` (default `http://qdrant:6333`)
+- `QDRANT_COLLECTION` (default `help_center`)
+- `OPENAI_EMBEDDING_MODEL` (default `text-embedding-3-small`)

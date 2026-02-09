@@ -2,7 +2,9 @@ from pydantic import BaseModel, Field
 
 
 class LLMConfig(BaseModel):
-    system_prompt: str = Field(default="You are a helpful assistant.")
+    system_prompt: str = Field(
+        default="You are a QA bot working at Zepliner. Zepliner is an e-SIM company and sells e-SIMs through the Zepliner mobile app."
+    )
     temperature: float = Field(default=0.7, ge=0.0, le=2.0)
     max_tokens: int = Field(default=512, ge=1, le=4096)
 
@@ -21,7 +23,7 @@ class AgentConfig(BaseModel):
     llm: LLMConfig = Field(default_factory=LLMConfig)
     stt: STTConfig = Field(default_factory=STTConfig)
     tts: TTSConfig = Field(default_factory=TTSConfig)
-    interruptibility_pct: int = Field(default=50, ge=0, le=100)
+    interruptibility_pct: int = Field(default=100, ge=0, le=100)
 
 
 class CreateSessionResponse(BaseModel):

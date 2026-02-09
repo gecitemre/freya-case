@@ -16,6 +16,9 @@ from pipecat.processors.aggregators.llm_response_universal import (
     LLMContextAggregatorPair,
     LLMUserAggregatorParams,
 )
+from pipecat.turns.user_start import MinWordsUserTurnStartStrategy
+from pipecat.turns.user_stop import TranscriptionUserTurnStopStrategy
+from pipecat.turns.user_turn_strategies import UserTurnStrategies
 from pipecat.services.cartesia.tts import CartesiaTTSService
 from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.services.openai.llm import OpenAILLMService
@@ -23,6 +26,7 @@ from pipecat.transports.daily.transport import DailyParams, DailyTransport
 
 from .models import AgentConfig
 from .observability import BotStateObserver
+from .rag_processor import RAGProcessor
 
 
 async def run_bot(
@@ -93,8 +97,16 @@ async def run_bot(
             ]
         )
 
+        user_turn_strategies = None
+        if allow_interruptions:
+            user_turn_strategies = UserTurnStrategies(
+                start=[MinWordsUserTurnStartStrategy(min_words=min_words)],
+                stop=[TranscriptionUserTurnStopStrategy(timeout=0.5)],
+            )
+
         user_params = LLMUserAggregatorParams(
             vad_analyzer=SileroVADAnalyzer(params=vad_params),
+            user_turn_strategies=user_turn_strategies,
         )
 
         user_aggregator, assistant_aggregator = LLMContextAggregatorPair(
@@ -109,8 +121,9 @@ async def run_bot(
         pipeline = Pipeline(
             [
                 transport.input(),
-                user_aggregator,
                 stt,
+                user_aggregator,
+                RAGProcessor(),
                 llm,
                 tts,
                 transport.output(),

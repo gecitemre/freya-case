@@ -14,6 +14,14 @@ type AgentConfig = {
   interruptibility_pct: number;
 };
 
+const clampNumber = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
+const parseNumber = (value: string, fallback: number) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
 export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
@@ -24,13 +32,13 @@ export default function Home() {
   const clientRef = useRef<PipecatClient | null>(null);
   const [config, setConfig] = useState<AgentConfig>({
     llm: {
-      system_prompt: "You are a helpful assistant.",
+      system_prompt: "You are a QA bot working at Zepliner. Zepliner is an e-SIM company and sells e-SIMs through the Zepliner mobile app.",
       temperature: 0.7,
       max_tokens: 512,
     },
     stt: { temperature: 0.0 },
     tts: { voice: "e00d0e4c-a5c8-443f-a8a3-473eb9a62355", speed: 1.0, temperature: 0.3 },
-    interruptibility_pct: 50,
+    interruptibility_pct: 100,
   });
 
   const createSession = useMutation({
@@ -145,12 +153,17 @@ export default function Home() {
             <label>LLM Temperature</label>
             <input
               type="number"
+              min={0}
+              max={2}
               step="0.1"
               value={config.llm.temperature}
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  llm: { ...config.llm, temperature: Number(e.target.value) },
+                  llm: {
+                    ...config.llm,
+                    temperature: clampNumber(parseNumber(e.target.value, config.llm.temperature), 0, 2),
+                  },
                 })
               }
             />
@@ -159,11 +172,20 @@ export default function Home() {
             <label>LLM Max Tokens</label>
             <input
               type="number"
+              min={1}
+              max={4096}
               value={config.llm.max_tokens}
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  llm: { ...config.llm, max_tokens: Number(e.target.value) },
+                  llm: {
+                    ...config.llm,
+                    max_tokens: clampNumber(
+                      parseNumber(e.target.value, config.llm.max_tokens),
+                      1,
+                      4096
+                    ),
+                  },
                 })
               }
             />
@@ -175,12 +197,20 @@ export default function Home() {
             <label>STT Temperature</label>
             <input
               type="number"
+              min={0}
+              max={1}
               step="0.1"
               value={config.stt.temperature}
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  stt: { temperature: Number(e.target.value) },
+                  stt: {
+                    temperature: clampNumber(
+                      parseNumber(e.target.value, config.stt.temperature),
+                      0,
+                      1
+                    ),
+                  },
                 })
               }
             />
@@ -189,11 +219,17 @@ export default function Home() {
             <label>Interruptibility %</label>
             <input
               type="number"
+              min={0}
+              max={100}
               value={config.interruptibility_pct}
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  interruptibility_pct: Number(e.target.value),
+                  interruptibility_pct: clampNumber(
+                    parseNumber(e.target.value, config.interruptibility_pct),
+                    0,
+                    100
+                  ),
                 })
               }
             />
@@ -219,12 +255,17 @@ export default function Home() {
             <label>TTS Speed</label>
             <input
               type="number"
+              min={0.5}
+              max={2}
               step="0.1"
               value={config.tts.speed}
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  tts: { ...config.tts, speed: Number(e.target.value) },
+                  tts: {
+                    ...config.tts,
+                    speed: clampNumber(parseNumber(e.target.value, config.tts.speed), 0.5, 2),
+                  },
                 })
               }
             />
@@ -236,12 +277,21 @@ export default function Home() {
             <label>TTS Temperature</label>
             <input
               type="number"
+              min={0}
+              max={1}
               step="0.1"
               value={config.tts.temperature}
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  tts: { ...config.tts, temperature: Number(e.target.value) },
+                  tts: {
+                    ...config.tts,
+                    temperature: clampNumber(
+                      parseNumber(e.target.value, config.tts.temperature),
+                      0,
+                      1
+                    ),
+                  },
                 })
               }
             />
