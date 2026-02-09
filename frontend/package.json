@@ -1,0 +1,27 @@
+{
+  "name": "agent-console-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "echo 'No frontend tests yet'"
+  },
+  "dependencies": {
+    "@pipecat-ai/client-js": "1.2.0",
+    "@pipecat-ai/daily-transport": "1.2.1",
+    "@tanstack/react-query": "5.51.24",
+    "@daily-co/daily-js": "0.80.0",
+    "next": "14.2.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.11.30",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "typescript": "5.4.5"
+  }
+}
